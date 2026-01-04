@@ -44,29 +44,35 @@ class AuthService {
 
   Future<User> login(String username, String password) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'username': username,
-          'password': password,
-          'expiresInMins': 30,
-        }),
-      );
+      // Thử đăng nhập với tài khoản local trước
+      try {
+        return await loginLocal(username, password);
+      } catch (e) {
+        // Nếu không tìm thấy local, thử với API (cho tài khoản demo)
+        final response = await http.post(
+          Uri.parse('$baseUrl/auth/login'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'username': username,
+            'password': password,
+            'expiresInMins': 30,
+          }),
+        );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final user = User.fromJson(data);
-        
-        // Lưu tokens vào SharedPreferences
-        await _saveTokens(user.accessToken, user.refreshToken);
-        
-        return user;
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Đăng nhập thất bại');
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final user = User.fromJson(data);
+          
+          // Lưu tokens vào SharedPreferences
+          await _saveTokens(user.accessToken, user.refreshToken);
+          
+          return user;
+        } else {
+          final errorData = json.decode(response.body);
+          throw Exception(errorData['message'] ?? 'Đăng nhập thất bại');
+        }
       }
     } catch (e) {
       throw Exception('Lỗi đăng nhập: $e');
@@ -83,6 +89,35 @@ class AuthService {
       throw Exception('Chưa đăng nhập');
     }
 
+    // Kiểm tra nếu là local token
+    if (_accessToken!.startsWith('local_token_')) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final usersKey = 'registered_users';
+        final usersJson = prefs.getString(usersKey);
+        
+        if (usersJson != null) {
+          final users = List<Map<String, dynamic>>.from(json.decode(usersJson));
+          // Lấy user ID từ token
+          final tokenParts = _accessToken!.split('_');
+          if (tokenParts.length >= 3) {
+            final userId = int.tryParse(tokenParts[2]);
+            if (userId != null) {
+              final user = users.firstWhere(
+                (u) => u['id'] == userId,
+                orElse: () => throw Exception('Không tìm thấy thông tin người dùng'),
+              );
+              return User.fromJson(user);
+            }
+          }
+        }
+        throw Exception('Không tìm thấy thông tin người dùng');
+      } catch (e) {
+        throw Exception('Lỗi lấy thông tin: $e');
+      }
+    }
+
+    // Đăng nhập với API
     try {
       var response = await http.get(
         Uri.parse('$baseUrl/auth/me'),
@@ -146,6 +181,92 @@ class AuthService {
       }
     } catch (e) {
       throw Exception('Lỗi refresh token: $e');
+    }
+  }
+
+  Future<User> register({
+    required String username,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String password,
+  }) async {
+    try {
+      // Lưu tài khoản vào local storage
+      final prefs = await SharedPreferences.getInstance();
+      final usersKey = 'registered_users';
+      
+      // Lấy danh sách users đã đăng ký
+      final usersJson = prefs.getString(usersKey);
+      List<Map<String, dynamic>> users = [];
+      if (usersJson != null) {
+        users = List<Map<String, dynamic>>.from(json.decode(usersJson));
+      }
+      
+      // Kiểm tra username hoặc email đã tồn tại chưa
+      if (users.any((u) => u['username'] == username)) {
+        throw Exception('Tên đăng nhập đã tồn tại');
+      }
+      if (users.any((u) => u['email'] == email)) {
+        throw Exception('Email đã được sử dụng');
+      }
+      
+      // Tạo user mới
+      final newUser = {
+        'id': users.length + 1,
+        'username': username,
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'password': password, // Trong thực tế nên hash password
+        'gender': '',
+        'image': '',
+      };
+      
+      users.add(newUser);
+      
+      // Lưu lại vào SharedPreferences
+      await prefs.setString(usersKey, json.encode(users));
+      
+      // Tạo User object để trả về
+      return User.fromJson(newUser);
+    } catch (e) {
+      throw Exception('Lỗi đăng ký: $e');
+    }
+  }
+
+  // Đăng nhập với tài khoản local
+  Future<User> loginLocal(String username, String password) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final usersKey = 'registered_users';
+      
+      final usersJson = prefs.getString(usersKey);
+      if (usersJson == null) {
+        throw Exception('Tên đăng nhập hoặc mật khẩu không đúng');
+      }
+      
+      final users = List<Map<String, dynamic>>.from(json.decode(usersJson));
+      final user = users.firstWhere(
+        (u) => u['username'] == username && u['password'] == password,
+        orElse: () => throw Exception('Tên đăng nhập hoặc mật khẩu không đúng'),
+      );
+      
+      // Tạo access token đơn giản (trong thực tế nên dùng JWT)
+      final accessToken = 'local_token_${user['id']}_${DateTime.now().millisecondsSinceEpoch}';
+      final refreshToken = 'refresh_token_${user['id']}_${DateTime.now().millisecondsSinceEpoch}';
+      
+      // Lưu tokens
+      await _saveTokens(accessToken, refreshToken);
+      
+      // Tạo User object với tokens
+      final userData = Map<String, dynamic>.from(user);
+      userData['accessToken'] = accessToken;
+      userData['refreshToken'] = refreshToken;
+      
+      return User.fromJson(userData);
+    } catch (e) {
+      throw Exception('Lỗi đăng nhập: $e');
     }
   }
 }

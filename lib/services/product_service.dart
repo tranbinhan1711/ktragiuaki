@@ -1,37 +1,317 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:mobile_test/models/product.dart';
 
 class ProductService {
-  static const String baseUrl = 'https://fakestoreapi.com';
-
-  Future<List<Product>> getProducts() async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/products'));
-
-      if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        return data.map((json) => Product.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load products');
-      }
-    } catch (e) {
-      throw Exception('Error fetching products: $e');
-    }
+  // Danh sách tất cả sản phẩm từ assets
+  static List<Product> getAllProducts() {
+    return [
+      // Honda - Xe ga
+      Product(
+        id: 1,
+        title: 'Air Blade 160i',
+        price: 52000000,
+        description: 'Xe tay ga Honda Air Blade 160i',
+        category: 'Honda',
+        image: 'images/honda/xe_ga/air_blade_160i.png',
+        rating: Rating(rate: 4.6, count: 234),
+      ),
+      Product(
+        id: 2,
+        title: 'Lead 125cc',
+        price: 45000000,
+        description: 'Xe tay ga Honda Lead 125cc',
+        category: 'Honda',
+        image: 'images/honda/xe_ga/lead_125cc.png',
+        rating: Rating(rate: 4.5, count: 189),
+      ),
+      Product(
+        id: 3,
+        title: 'SH Mode 125cc',
+        price: 55000000,
+        description: 'Xe tay ga Honda SH Mode 125cc',
+        category: 'Honda',
+        image: 'images/honda/xe_ga/sh_mode_125cc.png',
+        rating: Rating(rate: 4.8, count: 312),
+      ),
+      Product(
+        id: 4,
+        title: 'SH125i',
+        price: 58000000,
+        description: 'Xe tay ga Honda SH125i',
+        category: 'Honda',
+        image: 'images/honda/xe_ga/sh125i.png',
+        rating: Rating(rate: 4.7, count: 267),
+      ),
+      Product(
+        id: 5,
+        title: 'Vario 125',
+        price: 48000000,
+        description: 'Xe tay ga Honda Vario 125',
+        category: 'Honda',
+        image: 'images/honda/xe_ga/vario_125.png',
+        rating: Rating(rate: 4.6, count: 198),
+      ),
+      Product(
+        id: 6,
+        title: 'Vario 160',
+        price: 52000000,
+        description: 'Xe tay ga Honda Vario 160',
+        category: 'Honda',
+        image: 'images/honda/xe_ga/vario_160.png',
+        rating: Rating(rate: 4.7, count: 245),
+      ),
+      Product(
+        id: 7,
+        title: 'Vision',
+        price: 35000000,
+        description: 'Xe tay ga Honda Vision',
+        category: 'Honda',
+        image: 'images/honda/xe_ga/vision.png',
+        rating: Rating(rate: 4.4, count: 156),
+      ),
+      // Honda - Xe số
+      Product(
+        id: 8,
+        title: 'Blade 110',
+        price: 28000000,
+        description: 'Xe số Honda Blade 110',
+        category: 'Honda',
+        image: 'images/honda/xe_so/blade_110.png',
+        rating: Rating(rate: 4.5, count: 178),
+      ),
+      Product(
+        id: 9,
+        title: 'Future 125si',
+        price: 32000000,
+        description: 'Xe số Honda Future 125si',
+        category: 'Honda',
+        image: 'images/honda/xe_so/future_125si.png',
+        rating: Rating(rate: 4.6, count: 201),
+      ),
+      Product(
+        id: 10,
+        title: 'Wave Alpha 110cc',
+        price: 25000000,
+        description: 'Xe số Honda Wave Alpha 110cc',
+        category: 'Honda',
+        image: 'images/honda/xe_so/wave_alpha_110cc.png',
+        rating: Rating(rate: 4.4, count: 145),
+      ),
+      Product(
+        id: 11,
+        title: 'Wave RSX',
+        price: 27000000,
+        description: 'Xe số Honda Wave RSX',
+        category: 'Honda',
+        image: 'images/honda/xe_so/wave_rsx.png',
+        rating: Rating(rate: 4.5, count: 167),
+      ),
+      // Xe điện
+      Product(
+        id: 12,
+        title: 'EVO 200 Lite',
+        price: 35000000,
+        description: 'Xe điện EVO 200 Lite',
+        category: 'Xe điện',
+        image: 'images/xedien/evo_200_lite.png',
+        rating: Rating(rate: 4.3, count: 98),
+      ),
+      Product(
+        id: 13,
+        title: 'EVO 200',
+        price: 42000000,
+        description: 'Xe điện EVO 200',
+        category: 'Xe điện',
+        image: 'images/xedien/evo_200.png',
+        rating: Rating(rate: 4.5, count: 134),
+      ),
+      Product(
+        id: 14,
+        title: 'Feliz Neo',
+        price: 28000000,
+        description: 'Xe điện Feliz Neo',
+        category: 'Xe điện',
+        image: 'images/xedien/feliz_neo.png',
+        rating: Rating(rate: 4.2, count: 87),
+      ),
+      Product(
+        id: 15,
+        title: 'Klara S',
+        price: 32000000,
+        description: 'Xe điện Klara S',
+        category: 'Xe điện',
+        image: 'images/xedien/klara_s.png',
+        rating: Rating(rate: 4.4, count: 112),
+      ),
+      Product(
+        id: 16,
+        title: 'Theons',
+        price: 38000000,
+        description: 'Xe điện Theons',
+        category: 'Xe điện',
+        image: 'images/xedien/theons.png',
+        rating: Rating(rate: 4.6, count: 156),
+      ),
+      Product(
+        id: 17,
+        title: 'Vento S',
+        price: 30000000,
+        description: 'Xe điện Vento S',
+        category: 'Xe điện',
+        image: 'images/xedien/vento_s.png',
+        rating: Rating(rate: 4.3, count: 103),
+      ),
+      // Yamaha - Xe ga
+      Product(
+        id: 18,
+        title: 'Freego',
+        price: 48000000,
+        description: 'Xe tay ga Yamaha Freego',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_ga/freego.png',
+        rating: Rating(rate: 4.6, count: 223),
+      ),
+      Product(
+        id: 19,
+        title: 'Grande',
+        price: 45000000,
+        description: 'Xe tay ga Yamaha Grande',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_ga/grande.png',
+        rating: Rating(rate: 4.5, count: 198),
+      ),
+      Product(
+        id: 20,
+        title: 'Janus',
+        price: 38000000,
+        description: 'Xe tay ga Yamaha Janus',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_ga/janus.png',
+        rating: Rating(rate: 4.4, count: 167),
+      ),
+      Product(
+        id: 21,
+        title: 'Latte',
+        price: 42000000,
+        description: 'Xe tay ga Yamaha Latte',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_ga/latte.png',
+        rating: Rating(rate: 4.5, count: 189),
+      ),
+      Product(
+        id: 22,
+        title: 'Lexi',
+        price: 50000000,
+        description: 'Xe tay ga Yamaha Lexi',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_ga/lexi.png',
+        rating: Rating(rate: 4.7, count: 256),
+      ),
+      // Yamaha - Xe số
+      Product(
+        id: 23,
+        title: 'Jupiter Finn',
+        price: 29000000,
+        description: 'Xe số Yamaha Jupiter Finn',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_so/jupiter_finn.png',
+        rating: Rating(rate: 4.5, count: 178),
+      ),
+      Product(
+        id: 24,
+        title: 'PX 1',
+        price: 26000000,
+        description: 'Xe số Yamaha PX 1',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_so/px_1.png',
+        rating: Rating(rate: 4.4, count: 145),
+      ),
+      Product(
+        id: 25,
+        title: 'Sirius FI',
+        price: 28000000,
+        description: 'Xe số Yamaha Sirius FI',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_so/sirius_fi.png',
+        rating: Rating(rate: 4.5, count: 167),
+      ),
+      Product(
+        id: 26,
+        title: 'Sirius',
+        price: 27000000,
+        description: 'Xe số Yamaha Sirius',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_so/sirius.png',
+        rating: Rating(rate: 4.4, count: 156),
+      ),
+      // Yamaha - Xe thể thao
+      Product(
+        id: 27,
+        title: 'Exciter 150',
+        price: 55000000,
+        description: 'Xe thể thao Yamaha Exciter 150',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_the_thao/exciter_150.png',
+        rating: Rating(rate: 4.8, count: 345),
+      ),
+      Product(
+        id: 28,
+        title: 'Exciter 155 VVA',
+        price: 60000000,
+        description: 'Xe thể thao Yamaha Exciter 155 VVA',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_the_thao/exciter_155_vva.png',
+        rating: Rating(rate: 4.9, count: 412),
+      ),
+      Product(
+        id: 29,
+        title: 'MT 03',
+        price: 150000000,
+        description: 'Xe thể thao Yamaha MT 03',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_the_thao/mt_03.png',
+        rating: Rating(rate: 4.7, count: 189),
+      ),
+      Product(
+        id: 30,
+        title: 'MT 15',
+        price: 75000000,
+        description: 'Xe thể thao Yamaha MT 15',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_the_thao/mt_15.png',
+        rating: Rating(rate: 4.8, count: 267),
+      ),
+      Product(
+        id: 31,
+        title: 'PG 01',
+        price: 65000000,
+        description: 'Xe thể thao Yamaha PG 01',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_the_thao/pg_01.png',
+        rating: Rating(rate: 4.6, count: 198),
+      ),
+      Product(
+        id: 32,
+        title: 'XS 155R',
+        price: 70000000,
+        description: 'Xe thể thao Yamaha XS 155R',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_the_thao/xs_155r.png',
+        rating: Rating(rate: 4.7, count: 234),
+      ),
+      Product(
+        id: 33,
+        title: 'YZF R3',
+        price: 180000000,
+        description: 'Xe thể thao Yamaha YZF R3',
+        category: 'Yamaha',
+        image: 'images/yamaha/xe_the_thao/yzf_r3.png',
+        rating: Rating(rate: 4.9, count: 298),
+      ),
+    ];
   }
 
-  Future<Product> getProductById(int id) async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/products/$id'));
-
-      if (response.statusCode == 200) {
-        return Product.fromJson(json.decode(response.body));
-      } else {
-        throw Exception('Failed to load product');
-      }
-    } catch (e) {
-      throw Exception('Error fetching product: $e');
-    }
+  // Lọc sản phẩm theo danh mục
+  static List<Product> getProductsByCategory(String category) {
+    return getAllProducts().where((product) => product.category == category).toList();
   }
 }
-
