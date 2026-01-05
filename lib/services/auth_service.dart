@@ -269,5 +269,61 @@ class AuthService {
       throw Exception('Lỗi đăng nhập: $e');
     }
   }
+
+  // Cập nhật profile (chỉ cho local users)
+  Future<User> updateProfile({
+    required String currentPassword,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? newPassword,
+  }) async {
+    try {
+      if (_accessToken == null) {
+        await loadTokens();
+      }
+
+      if (_accessToken == null || !_accessToken!.startsWith('local_token_')) {
+        throw Exception('Chỉ có thể cập nhật profile cho tài khoản local');
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final usersKey = 'registered_users';
+      final usersJson = prefs.getString(usersKey);
+      
+      if (usersJson == null) {
+        throw Exception('Không tìm thấy thông tin người dùng');
+      }
+
+      final users = List<Map<String, dynamic>>.from(json.decode(usersJson));
+      final tokenParts = _accessToken!.split('_');
+      if (tokenParts.length >= 3) {
+        final userId = int.tryParse(tokenParts[2]);
+        if (userId != null) {
+          final userIndex = users.indexWhere((u) => u['id'] == userId);
+          if (userIndex >= 0) {
+            // Kiểm tra mật khẩu hiện tại
+            if (users[userIndex]['password'] != currentPassword) {
+              throw Exception('Mật khẩu hiện tại không đúng');
+            }
+
+            // Cập nhật thông tin
+            if (firstName != null) users[userIndex]['firstName'] = firstName;
+            if (lastName != null) users[userIndex]['lastName'] = lastName;
+            if (email != null) users[userIndex]['email'] = email;
+            if (newPassword != null && newPassword.isNotEmpty) {
+              users[userIndex]['password'] = newPassword;
+            }
+            
+            await prefs.setString(usersKey, json.encode(users));
+            return User.fromJson(users[userIndex]);
+          }
+        }
+      }
+      throw Exception('Không tìm thấy thông tin người dùng');
+    } catch (e) {
+      throw Exception('Lỗi cập nhật profile: $e');
+    }
+  }
 }
 

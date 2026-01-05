@@ -4,11 +4,13 @@ import 'package:mobile_test/screens/cart_screen.dart';
 import 'package:mobile_test/screens/profile_screen.dart';
 import 'package:mobile_test/screens/login_screen.dart';
 import 'package:mobile_test/services/auth_service.dart';
+import 'package:mobile_test/services/cart_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Load tokens khi app khởi động
+  // Load tokens và cart khi app khởi động
   await AuthService.loadTokens();
+  await CartService().loadCart();
   runApp(const MyApp());
 }
 

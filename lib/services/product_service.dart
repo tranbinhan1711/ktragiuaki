@@ -314,4 +314,13 @@ class ProductService {
   static List<Product> getProductsByCategory(String category) {
     return getAllProducts().where((product) => product.category == category).toList();
   }
+
+  // Lấy sản phẩm theo ID
+  static Product? getProductById(int id) {
+    try {
+      return getAllProducts().firstWhere((product) => product.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
 }
